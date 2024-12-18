@@ -621,19 +621,31 @@ Value ForLoopNode::evaluate(std::shared_ptr<Scope> scope) const {
         }
     } else {
         Value iterableValue = startExpr->evaluate(scope);
-        if (!iterableValue.isDict()) {
-            throw TypeError("Nie można iterować: wartość nie jest słownikiem");
-        }
-        std::vector<ValueBase> keys = iterableValue.getDictKeys();
-        for (const auto &key: keys) {
-            loopScope->setVariable(variableName, Value(key));
-            try {
-                lastValue = body->evaluate(loopScope);
-            } catch (const ControlFlowException &e) {
-                if (e.what() == std::string("BREAK")) break;
-                if (e.what() == std::string("CONTINUE")) continue;
+        if (iterableValue.isDict()) {
+            std::vector<ValueBase> keys = iterableValue.getDictKeys();
+            for (const auto &key: keys) {
+                loopScope->setVariable(variableName, Value(key));
+                try {
+                    lastValue = body->evaluate(loopScope);
+                } catch (const ControlFlowException &e) {
+                    if (e.what() == std::string("BREAK")) break;
+                    if (e.what() == std::string("CONTINUE")) continue;
+                }
             }
+        } else if (iterableValue.isList()) {
+            for (const auto &val: iterableValue.asList()) {
+                loopScope->setVariable(variableName, *val);
+                try {
+                    lastValue = body->evaluate(loopScope);
+                } catch (const ControlFlowException &e) {
+                    if (e.what() == std::string("BREAK")) break;
+                    if (e.what() == std::string("CONTINUE")) continue;
+                }
+            }
+        } else {
+            throw TypeError("Nie można iterować: wartość nie jest słownikiem ani listą");
         }
+
     }
     return lastValue;
 }

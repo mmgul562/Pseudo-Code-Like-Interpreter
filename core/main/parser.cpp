@@ -72,7 +72,7 @@ bool Parser::isStatementComplete() {
         }
     }
     lexer.pos = tempPos;
-    return nestedLevel == 0 || checkThen || checkDo || checkAs;
+    return nestedLevel == 0 && !checkThen && !checkDo && !checkAs;
 }
 
 // specific parsing

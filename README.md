@@ -3,7 +3,7 @@
 ## Wymagania
 
 1. Kompilator kompatybilny z C++20
-2. (zalecane) CMake 3.23 lub nowszy
+2. (zalecane) CMake 3.22.1 lub nowszy
 
 ## Rozpoczęcie
 
@@ -15,13 +15,14 @@
     - `cmake ..`
     - `make`
 3. Uruchom program:
-   `./cpp_interpreter_pl`
+   - Uruchom interaktywny shell: `./cpp_interpreter_pl`
+   - Odczytaj kod z pliku: `./cpp_interpreter_pl <nazwa_pliku>`
+
 
 ## Cechy Języka
 
 ### Podstawowe informacje
 - Wszystko jest wyrażeniem. Instrukcje (takie jak [definiowanie funkcji](#funkcje)) zwrócą po prostu `nic`
-- Każde poprawne instrukcje lub wyrażenia zostaną ewaluowane, a ich wynik wyświetlony
 - Język jest niewrażliwy na białe znaki, **z wyjątkiem** nowych linii, które są zazwyczaj traktowane jako koniec instrukcji
 - Instrukcje są oddzielane średnikami `;` lub nowymi liniami. Użycie `;` jest kluczowe przy pisaniu wielu instrukcji w jednej linii
 - Każde wejście (input) może być kontynuowane w następnych liniach, jeśli linia wejściowa kończy się ukośnikiem odwrotnym `\`
@@ -56,12 +57,13 @@ Błąd
 
 </details>
 
-### Variables
 
-- There is **no** variable declaration
-- Variable assignment uses `:=` operator
-- Variable reassignment uses `=` operator
-- Multiple variables can be assigned within a single statement
+### Zmienne 
+
+- Deklaracja zmiennych **nie istnieje**
+- Przypisywanie zmiennych używa operatora `:=` 
+- Ponowne przypisywanie zmiennych używa operatora `=` 
+- W jednej instrukcji może zostać przypisanych wiele zmiennych
 
 <details><summary>Przykłady</summary>
 
@@ -89,6 +91,7 @@ Błąd
 ```
 
 </details>
+
 
 ### Typy danych
 
@@ -158,6 +161,7 @@ nic                                     <- wynik
 
 </details>
 
+
 ### Operatory
 
 - Arytmetyczne: `+`, `-`, `*`, `/`, `//` (dzielenie całkowite), `**` (potęgowanie), `%` (modulo)
@@ -214,6 +218,7 @@ falsz
 ```
 
 </details>
+
 
 ### Narzucanie Typów
 
@@ -273,6 +278,7 @@ Błąd
 
 </details>
 
+
 ### Metody
 
 - Metody list: `dlugosc()`, `dodaj()`, `usun()`, `wstaw()`
@@ -314,15 +320,17 @@ Błąd
 
 </details>
 
+
 ### Struktury Kontrolne
 
 - Jeżeli-wtedy: `jezeli warunek wtedy ... [inaczej ...] stop`
 - Pętla 'dla': `dla i w n..m[:k] wykonuj ... stop` lub `dla klucz w slownik wykonuj ... stop`
+lub `dla element w lista wykonuj ... stop`
 - Pętla 'podczas gdy': `podczas gdy warunek wykonuj ... stop`
 
 <details><summary>Szczegóły</summary>
 
-1. Wszystkie struktury kontrolne mogą być kontynuowane w następnych liniach bez użycia `\`, po odpowiadającym im
+1. (Shell) Wszystkie struktury kontrolne mogą być kontynuowane w następnych liniach bez użycia `\`, po odpowiadającym im
    ropoczynającym słowie kluczowym.
    Wejście (input) przestanie być pobierane wtedy, kiedy dla ostatniego bloku zostanie przekazane słowo kluczowe `stop`
 
@@ -350,7 +358,7 @@ stop                 <- drugi stop
 15                                                     <- wartość przypisana do x
 ```
 
-3. Pętle 'dla' mogą iterować przez jakiś zakres liczbowy, a także przez klucze słownika.
+3. Pętle 'dla' mogą iterować przez jakiś zakres liczbowy, elementy listy, a także przez klucze słownika.
    Używając pętli opartej na zakresie liczbowym, krok robiony po każdej iteracji może zostać sprecyzowane przy
    użyciu `:`. Domyślny krok jest równy 1
 
@@ -373,31 +381,34 @@ stop
 ```
 
 ```
-> slownik := {"jeden": 1, "dwa": 2, "trzy": 3}
-{"jeden": 1, "dwa": 2, "trzy": 3}                   <- przed
+> lista := [1, '2', [3], 4.5]
+[1, "2", [3], 4.500000]
+> dla element w lista wykonuj
+   wyswietl(typ(element))
+stop
+
+calk                       <- wynik
+lancuch
+lista
+zmienno
+```
+
+```
+> slownik := {"k1": 1, "k2": [2], "k3": 3.14}
+{"k1": 1, "k2": [2], "k3": 3.140000}
 > dla klucz w slownik wykonuj
-    slownik[klucz] = 0
+   wyswietl(typ(slownik[klucz]))
 stop
-> slownik
-{"jeden": 0, "dwa": 0, "trzy": 0}                <- po
-```
 
-4. Pętle 'dla' nie mogą iterować przez listy bezpośrednio, jednak to samo zachowanie moze zostać osiągnięte
-   przy użyciu [metody](#metody) `dlugosc()`
-
-```
-> lista := [1, -2, 3, -4, 5]
-[1, -2, 3, -4, 5]                           <- przed
-> dla i w 0..lista.dlugosc()-1 wykonuj
-   lista[i] = lista[i] + 1
-stop
-> lista
-[2, -1, 4, -3, 6]                      <- po
+calk                              <- wynik
+lista
+zmienno
 ```
 
 5. Maksymalna liczba iteracji pętl 'podczas gdy' to 99999
 
 </details>
+
 
 ### Funkcje
 
@@ -465,6 +476,7 @@ stop
 ```
 
 </details>
+
 
 ### Wbudowane Funkcje
 
