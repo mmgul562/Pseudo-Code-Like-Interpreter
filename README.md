@@ -3,30 +3,33 @@
 ## Requirements
 
 1. A C++20 compatible compiler
-2. (recommended) CMake 3.23 or higher
+2. (recommended) CMake 3.22.1 or higher
 
 ## Getting Started
 
 1. Clone the Repository
 2. Build the Project. If you're using CMake, then:
-    - `cd <root_project_dir>`
-    - `mkdir build`
-    - `cd build`
-    - `cmake ..`
-    - `make`
+   - `cd <root_project_dir>`
+   - `mkdir build`
+   - `cd build`
+   - `cmake ..`
+   - `make`
 3. Run the program:
-   `./cpp_interpreter_en`
+   - Start the interactive shell:
+     `./cpp_interpreter_en`
+   - Run the code inside a file:
+     `./cpp_interpreter_en <filename>`
+
 
 ## Language Features
 
 ### Basic Information
 
 - Everything is an expression. Statements (like [function definition](#functions)) will just return `null`
-- Any valid statements or expressions will be evaluated and their result printed
 - Language is whitespace-insensitive, **except** newlines, which are normally treated as the end of the statement
 - Statements are separated by semicolons `;` or newlines. Using `;` is crucial when writing multiple statements in a
   single line
-- Every input can be continued in the next lines, if the input line ends with backslash `\`
+- Every line can be continued, if it ends with a backslash `\`
 
 <details><summary>Examples</summary>
 
@@ -57,6 +60,7 @@ Error
 ```
 
 </details>
+
 
 ### Variables
 
@@ -91,6 +95,7 @@ Error
 ```
 
 </details>
+
 
 ### Data Types
 
@@ -134,8 +139,8 @@ Error
 [1, 3.140000, true, ["hello"], false]
 ```
 
-6. Dictionaries use curly brackets `{}`, can hold only basic data type (`int`, `float`, `bool`, `str`) as a key and any
-   data type as a value
+6. Dictionaries use curly brackets `{}`, can hold only basic data types (`int`, `float`, `bool`, `str`) as keys and any
+   data types as values
 
 ```
 > myDict := {"key": "val", true: ["true", 2, 3], 3.: 145}      <- ok
@@ -157,6 +162,7 @@ null                                      <- result
 ```
 
 </details>
+
 
 ### Operators
 
@@ -184,7 +190,7 @@ true
 ```
 > str1 := "Hello"
 "Hello"
-> str2 = str1 + ", world!"
+> str2 := str1 + ", world!"
 "Hello, world!"
 > str1 == str2
 false
@@ -194,9 +200,9 @@ true
 
 3. Logical operators work with booleans only.
 4. Unlike normal type-casting, the `?` operator will convert **any** valid expression to boolean, including the following:
-    - empty lists `[]` to `false`, otherwise `true`
-    - empty dictionaries `{}` to `false`, otherwise `true`
-    - `null` to `false`
+   - empty lists `[]` to `false`, otherwise `true`
+   - empty dictionaries `{}` to `false`, otherwise `true`
+   - `null` to `false`
 
 ```
 > myList := [1, 3, 4]
@@ -213,6 +219,7 @@ false
 ```
 
 </details>
+
 
 ### Type Casting
 
@@ -272,6 +279,7 @@ Error
 
 </details>
 
+
 ### Methods
 
 - List methods: `len()`, `append()`, `remove()`, `put()`
@@ -313,15 +321,16 @@ Error
 
 </details>
 
+
 ### Control Structures
 
 - If-else: `if condition then ... [else ...] stop`
-- For loop: `for i in n..m[:s] do ... stop` or `for key in dict do ... stop`
+- For loop: `for i in n..m[:s] do ... stop` or `for element in container do ... stop`
 - While loop: `while condition do ... stop`
 
 <details><summary>Details</summary>
 
-1. All control structures can be continued in the next lines after their starting keyword, without the use of `\`
+1. (Shell) All control structures can be continued in the next lines after their starting keyword, without the use of `\`
    The input will stop after the outermost `stop` keyword was passed
 
 ```
@@ -348,7 +357,7 @@ stop                  <- outer stop
 15                                            <- the value assigned to x
 ```
 
-3. For loops can iterate over range, as well as over dictionary's keys.
+3. For loops can iterate over range, list's elements, as well as dictionary's keys.
    When using range-based loop, the step taken after every iteration can be specified with `:`. The default step is 1
 
 ```
@@ -370,31 +379,34 @@ stop
 ```
 
 ```
-> myDict := {"one": 1, "two": 2, "three": 3}
-{"one": 1, "two": 2, "three": 3}                    <- before
+> myList := [1, "2", [3], 4.5]
+[1, "2", [3], 4.5]
+> for element in myList do
+   print(type(element))
+stop
+
+int                 <- result
+str
+list
+float
+```
+
+```
+> myDict := {"key1": 1, "key2": [2], "key3": 3.14}
+{"key1": 1, "key2": [2], "key3": 3.14}
 > for key in myDict do
-    myDict[key] = 0
+    print(type(myDict[key])
 stop
-> myDict
-{"one": 0, "two": 0, "three": 0}                <- after
+
+int                           <- result
+list
+float
 ```
 
-4. For loops cannot iterate over lists directly, however the same behaviour can be achieved
-   with `len()` [method](#methods)
-
-```
-> myList := [1, -2, 3, -4, 5]
-[1, -2, 3, -4, 5]                        <- before
-> for i in 0..myList.len()-1 do
-   myList[i] = myList[i] + 1
-stop
-> myList
-[2, -1, 4, -3, 6]                      <- after
-```
-
-5. While loop's maximum number of iterations is 99999.
+4. While loop's maximum number of iterations is 99999.
 
 </details>
+
 
 ### Functions
 
@@ -452,18 +464,19 @@ Error
 ```
 > def sum(..args) as
    sum := 0.
-   for i in 0..args.len()-1 do            <- iterating over 'args' list
-      sum = sum + args[i] as float
+   for arg in args do             <- iterating over 'args' list
+      sum = sum + arg as float
    stop
    sum
 stop
 > sum(2, 4)                            <- ok
-6
+6.000000
 > sum(13, -2, 9, 3.14, 80.5)              <- ok too
 103.640000
 ```
 
 </details>
+
 
 ### Built-in Functions
 

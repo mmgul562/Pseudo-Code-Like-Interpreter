@@ -242,7 +242,8 @@ Value BinaryOpVisitor::operator()(long lhs, long rhs) const {
             return Value(lhs * rhs);
         case TokenType::DBL_ASTER:
             return Value(static_cast<long>(std::pow(lhs, rhs)));
-        case TokenType::SLASH: case TokenType::DBL_SLASH:
+        case TokenType::SLASH:
+        case TokenType::DBL_SLASH:
             return Value(lhs / rhs);
         default:
             throw InterpreterError("Unexpected binary operator for int values: " + getTypeName(op));
@@ -334,6 +335,7 @@ Value VariableNode::evaluate(std::shared_ptr<Scope> scope) const {
 
 std::unique_ptr<ASTNode> ListNode::clone() const {
     std::vector<std::unique_ptr<ASTNode>> clonedElements;
+    clonedElements.reserve(elements.size());
     for (const auto &element: elements) {
         clonedElements.push_back(element->clone());
     }
@@ -342,6 +344,7 @@ std::unique_ptr<ASTNode> ListNode::clone() const {
 
 Value ListNode::evaluate(std::shared_ptr<Scope> scope) const {
     std::vector<Value> result;
+    result.reserve(elements.size());
     for (const auto &element: elements) {
         result.push_back(element->evaluate(scope));
     }
@@ -351,6 +354,7 @@ Value ListNode::evaluate(std::shared_ptr<Scope> scope) const {
 
 std::unique_ptr<ASTNode> DictNode::clone() const {
     std::vector<std::pair<std::unique_ptr<ASTNode>, std::unique_ptr<ASTNode>>> clonedElements;
+    clonedElements.reserve(elements.size());
     for (const auto &element: elements) {
         clonedElements.emplace_back(element.first->clone(), element.second->clone());
     }
@@ -473,6 +477,7 @@ Value IndexAssignmentNode::evaluate(std::shared_ptr<Scope> scope) const {
 
 std::unique_ptr<ASTNode> MethodCallNode::clone() const {
     std::vector<std::unique_ptr<ASTNode>> clonedArguments;
+    clonedArguments.reserve(arguments.size());
     for (const auto &arg: arguments) {
         clonedArguments.push_back(arg->clone());
     }
@@ -582,7 +587,7 @@ Value ForLoopNode::evaluate(std::shared_ptr<Scope> scope) const {
 
         if (!startValue.isBase() || !std::holds_alternative<long>(startValue.asBase()) ||
             !endValue.isBase() || !std::holds_alternative<long>(endValue.asBase())) {
-            throw TypeError("Loop range must be integers");
+            throw TypeError("Loop ranges must be integers");
         }
 
         long start = std::get<long>(startValue.asBase());
@@ -616,19 +621,31 @@ Value ForLoopNode::evaluate(std::shared_ptr<Scope> scope) const {
         }
     } else {
         Value iterableValue = startExpr->evaluate(scope);
-        if (!iterableValue.isDict()) {
-            throw TypeError("Cannot iterate: not a dictionary");
-        }
-        std::vector<ValueBase> keys = iterableValue.getDictKeys();
-        for (const auto &key: keys) {
-            loopScope->setVariable(variableName, Value(key));
-            try {
-                lastValue = body->evaluate(loopScope);
-            } catch (const ControlFlowException &e) {
-                if (e.what() == std::string("BREAK")) break;
-                if (e.what() == std::string("CONTINUE")) continue;
+        if (iterableValue.isDict()) {
+            std::vector<ValueBase> keys = iterableValue.getDictKeys();
+            for (const auto &key: keys) {
+                loopScope->setVariable(variableName, Value(key));
+                try {
+                    lastValue = body->evaluate(loopScope);
+                } catch (const ControlFlowException &e) {
+                    if (e.what() == std::string("BREAK")) break;
+                    if (e.what() == std::string("CONTINUE")) continue;
+                }
             }
+        } else if (iterableValue.isList()) {
+            for (const auto &val: iterableValue.asList()) {
+                loopScope->setVariable(variableName, *val);
+                try {
+                    lastValue = body->evaluate(loopScope);
+                } catch (const ControlFlowException &e) {
+                    if (e.what() == std::string("BREAK")) break;
+                    if (e.what() == std::string("CONTINUE")) continue;
+                }
+            }
+        } else {
+            throw TypeError("Cannot iterate: not a container");
         }
+
     }
     return lastValue;
 }
@@ -702,6 +719,7 @@ Value FunctionDeclarationNode::evaluate(std::shared_ptr<Scope> scope) const {
 
 std::unique_ptr<ASTNode> FunctionCallNode::clone() const {
     std::vector<std::unique_ptr<ASTNode>> clonedArguments;
+    clonedArguments.reserve(arguments.size());
     for (const auto &arg: arguments) {
         clonedArguments.push_back(arg->clone());
     }
@@ -764,4 +782,3 @@ Value FunctionCallNode::evaluate(std::shared_ptr<Scope> scope) const {
         return e.returnValue;
     }
 }
-
