@@ -1,0 +1,58 @@
+rows := 5
+cols := 5
+steps := input("Steps: ") as int;
+
+
+grid := [[0, 1, 0, 0, 0], \
+    [0, 0, 1, 0, 0], \
+    [1, 1, 1, 0, 0], \
+    [0, 0, 0, 0, 0], \
+    [0, 0, 0, 0, 0]]
+
+def count_neighbors(x, y) as
+    neighbors := 0
+    for dx in [-1, 0, 1] do
+        for dy in [-1, 0, 1] do
+            if dx != 0 | dy != 0 then
+                nx := x + dx
+                ny := y + dy
+                if nx >= 0 & ny >= 0 & nx < rows & ny < cols then
+                    neighbors = neighbors + grid[nx][ny]
+                stop
+            stop
+        stop
+    stop
+    return neighbors
+stop
+
+
+'Main simulation loop'
+for step in 0..steps do
+    new_grid := []
+    for i in 0..rows-1 do
+        new_row := []
+        for j in 0..cols-1 do
+            neighbors := count_neighbors(i, j)
+            if grid[i][j] == 1 then
+                if neighbors < 2 | neighbors > 3 then
+                    new_row.append(0)
+                else
+                    new_row.append(1)
+                stop
+            else
+                if neighbors == 3 then
+                    new_row.append(1)
+                else
+                    new_row.append(0)
+                stop
+            stop
+        stop
+        new_grid.append(new_row)
+    stop
+    grid = new_grid
+
+    for row in grid do
+        print(row)
+    stop
+    print("--- End of Step ", step, " ---")
+stop

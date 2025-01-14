@@ -36,7 +36,7 @@ int interpret(bool shell, const std::string &filename) {
                 } else {
                     std::getline(file, line);
                 }
-                line.erase(line.find_last_not_of(" \t") + 1);
+                line.erase(line.find_last_not_of(" \t\r") + 1);
 
                 if (shell && line == "exit" && multiline.empty()) {
                     return 0;

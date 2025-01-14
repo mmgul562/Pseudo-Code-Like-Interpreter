@@ -12,7 +12,11 @@ class Value;
 
 Value print(const std::vector<std::unique_ptr<ASTNode>> &arguments, std::shared_ptr<Scope> &scope);
 
+Value input(const std::vector<std::unique_ptr<ASTNode>> &arguments, std::shared_ptr<Scope> &scope);
+
 Value type(const std::vector<std::unique_ptr<ASTNode>> &arguments, std::shared_ptr<Scope> &scope);
+
+Value now(const std::vector<std::unique_ptr<ASTNode>> &arguments, std::shared_ptr<Scope> &scope);
 
 Value roundf(const std::vector<std::unique_ptr<ASTNode>> &arguments, std::shared_ptr<Scope> &scope);
 

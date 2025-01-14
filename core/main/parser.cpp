@@ -28,18 +28,18 @@ bool Parser::isStatementComplete() {
         switch (type) {
             case TokenType::IF: {
                 checkThen = true;
-                ++nestedLevel;
+                nestedLevel++;
                 break;
             }
             case TokenType::FOR :
             case TokenType::WHILE : {
                 checkDo = true;
-                ++nestedLevel;
+                nestedLevel++;
                 break;
             }
             case TokenType::DEF : {
                 checkAs = true;
-                ++nestedLevel;
+                nestedLevel++;
                 break;
             }
             case TokenType::THEN : {
@@ -72,7 +72,7 @@ bool Parser::isStatementComplete() {
         }
     }
     lexer.pos = tempPos;
-    return nestedLevel == 0 && !checkThen && !checkDo && !checkAs;
+    return nestedLevel == 0 || checkThen || checkDo || checkAs;
 }
 
 // specific parsing

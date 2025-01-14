@@ -731,8 +731,12 @@ Value FunctionCallNode::evaluate(std::shared_ptr<Scope> scope) const {
     size_t argSize = arguments.size();
     if (name == "print") {
         return print(arguments, scope);
+    } else if (name == "input") {
+        return input(arguments, scope);
     } else if (name == "type") {
         return type(arguments, scope);
+    } else if (name == "now") {
+        return now(arguments, scope);
     } else if (name == "roundf") {
         return roundf(arguments, scope);
     } else if (name == "round") {

@@ -3,6 +3,7 @@
 #include "functions.h"
 #include "errors.h"
 #include <cmath>
+#include <chrono>
 
 #define CYAN "\x1B[36m"
 #ifndef RST
@@ -17,12 +18,31 @@ Value print(const std::vector<std::unique_ptr<ASTNode>> &arguments, std::shared_
     for (size_t i = 0; i < size; ++i) {
         Value argValue = arguments[i]->evaluate(scope);
         printValue(argValue, false);
-        if (i < size - 1) {
-            std::cout << " ";
-        }
     }
     std::cout << RST << std::endl;
     return Value();
+}
+
+
+Value input(const std::vector<std::unique_ptr<ASTNode>> &arguments, std::shared_ptr<Scope> &scope) {
+    size_t size = arguments.size();
+    if (size != 1 && size != 0) {
+        throw ValueError("Function input() takes either 1 or no arguments, but got " + std::to_string(arguments.size()));
+    }
+    if (size == 1) {
+        Value promptVal = arguments[0]->evaluate(scope);
+        if (!promptVal.isBase()) {
+            throw TypeError("Input prompt must be a string");
+        }
+        ValueBase prompt = promptVal.asBase();
+        if (!std::holds_alternative<std::string>(prompt)) {
+            throw TypeError("Input prompt must be a string");
+        }
+        std::cout << CYAN << toString(prompt) << RST;
+    }
+    std::string line;
+    std::getline(std::cin, line);
+    return Value(line);
 }
 
 
@@ -43,6 +63,26 @@ Value type(const std::vector<std::unique_ptr<ASTNode>> &arguments, std::shared_p
         return Value("dict");
     }
     return Value("null");
+}
+
+
+Value now(const std::vector<std::unique_ptr<ASTNode>> &arguments, std::shared_ptr<Scope> &scope) {
+    if (!arguments.empty()) {
+        throw ValueError("Function now() expects no arguments, but got " + std::to_string(arguments.size()));
+    }
+    auto now = std::chrono::system_clock::now();
+    auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()).count() % 1000;
+    std::time_t time = std::chrono::system_clock::to_time_t(now);
+    std::tm* timeinfo = std::localtime(&time);
+    Value dict = Value(ValueDict());
+    dict.setDictElement(ValueBase("year"), Value(1900 + timeinfo->tm_year));
+    dict.setDictElement(ValueBase("month"), Value(1 + timeinfo->tm_mon));
+    dict.setDictElement(ValueBase("day"), Value(timeinfo->tm_mday));
+    dict.setDictElement(ValueBase("hour"), Value(timeinfo->tm_hour));
+    dict.setDictElement(ValueBase("minute"), Value(timeinfo->tm_min));
+    dict.setDictElement(ValueBase("second"), Value(timeinfo->tm_sec));
+    dict.setDictElement(ValueBase("ms"), Value(static_cast<int>(ms)));
+    return dict;
 }
 
 

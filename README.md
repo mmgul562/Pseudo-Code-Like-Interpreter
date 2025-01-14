@@ -20,12 +20,16 @@
    - Run the code inside a file:
      `./cpp_interpreter_en <filename>`
 
+There are 2 example programs included that you can try out:
+1. Simple neural network (`neural_network`)
+2. John Conway's Game of Life (`game_of_life`)
+
 
 ## Language Features
 
 ### Basic Information
 
-- Everything is an expression. Statements (like [function definition](#functions)) will just return `null`
+- Everything is an expression. Statements like [function definition](#functions) will just return `null`
 - Language is whitespace-insensitive, **except** newlines, which are normally treated as the end of the statement
 - Statements are separated by semicolons `;` or newlines. Using `;` is crucial when writing multiple statements in a
   single line
@@ -480,12 +484,14 @@ stop
 
 ### Built-in Functions
 
-- `print()`: Print values seperated by `,` to stdout. Type-casting to string is not required
-- `type()`: Get the type of a value as a string
-- `roundf()`: Round a float to given precision
-- `round()`: Round a float to the nearest integer
-- `floor()`: Round a float down to the nearest integer
-- `ceil()`: Round a float up to the nearest integer
+- `print(..args)`: Print values seperated by `,` to stdout. Type-casting to string is not required
+- `input(prompt)`: Take user input as a string. Argument `prompt` is optional
+- `type(value)`: Get the type of a value as a string
+- `now()`: Get the current datetime as a dictionary
+- `roundf(float, precision)`: Round a float to given precision
+- `round(float)`: Round a float to the nearest integer
+- `floor(float)`: Round a float down to the nearest integer
+- `ceil(float)`: Round a float up to the nearest integer
 
 <details><summary>Examples</summary>
 

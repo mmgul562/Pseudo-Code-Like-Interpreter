@@ -1,0 +1,230 @@
+def sqrt(n) as
+    x := 1.0
+    nf := n as float
+    for i in 1..10 do
+        x = (x + nf / x) / 2.0;
+    stop
+    return x
+stop
+
+def random_between(min, max) as
+    now := now()
+    seed := now["ms"] + now["second"]
+    a := 1664525
+    c := 1013904223
+    m := 2147483647
+
+    seed = (a * seed + c) % m
+
+    scaled := min as float + ((seed as float / m as float) * ((max - min) as float))
+    return scaled as int
+stop
+
+def exp(x) as
+    result := 1.0
+    term := 1.0
+    for i in 1..10 do
+        term = term * x / i as float
+        result = result + term
+    stop
+    return result
+stop
+
+def sigmoid(x) as
+    return 1.0 / (1.0 + exp(-x))
+stop
+
+def sigmoid_derivative(x) as
+    s := sigmoid(x)
+    return s * (1.0 - s)
+stop
+
+'Matrix and vector functions'
+
+def dot_product(vector1, vector2) as
+    result := 0.0
+    for i in 0..vector1.len()-1 do
+        result = result + vector1[i] as float * vector2[i] as float
+    stop
+    return result
+stop
+
+def matrix_multiply(matrix, vector) as
+    result := []
+    for i in 0..matrix.len()-1 do
+        result.append(dot_product(matrix[i], vector))
+    stop
+    return result
+stop
+
+def initialize_matrix(rows, cols) as
+    matrix := []
+    for i in 0..rows-1 do
+        matrix.append([])
+        for j in 0..cols-1 do
+            scale := sqrt(1.0 / cols as float)
+            matrix[i].append((random_between(-1000, 1000) as float / 1000.0) * scale)
+        stop
+    stop
+    return matrix
+stop
+
+def initialize_vector(size) as
+    vector := []
+    for i in 0..size-1 do
+        vector.append(random_between(-1000, 1000) as float / 1000.0)
+    stop
+    return vector
+stop
+
+'Neural network functions'
+
+def create_neural_network(input_size, hidden_size, output_size) as
+    network := { \
+        "input_size": input_size, \
+        "hidden_size": hidden_size, \
+        "output_size": output_size, \
+        "learning_rate": 0.05, \
+        "hidden_weights": initialize_matrix(hidden_size, input_size), \
+        "output_weights": initialize_matrix(output_size, hidden_size), \
+        "hidden_bias": initialize_vector(hidden_size), \
+        "output_bias": initialize_vector(output_size) \
+    }
+    return network
+stop
+
+def forward_propagate(network, input_data) as
+    hidden_inputs := matrix_multiply(network["hidden_weights"], input_data)
+    for i in 0..network["hidden_size"]-1 do
+        hidden_inputs[i] = hidden_inputs[i] + network["hidden_bias"][i]
+    stop
+
+    hidden_outputs := []
+    for i in 0..network["hidden_size"]-1 do
+        hidden_outputs.append(sigmoid(hidden_inputs[i]))
+    stop
+
+    output_inputs := matrix_multiply(network["output_weights"], hidden_outputs)
+    for i in 0..network["output_size"]-1 do
+        output_inputs[i] = output_inputs[i] + network["output_bias"][i]
+    stop
+
+    outputs := []
+    for i in 0..network["output_size"]-1 do
+        outputs.append(sigmoid(output_inputs[i]))
+    stop
+
+    return { \
+        "outputs": outputs, \
+        "hidden_outputs": hidden_outputs, \
+        "hidden_inputs": hidden_inputs, \
+        "output_inputs": output_inputs \
+    }
+stop
+
+def backward_propagate(network, input_data, target, forward_results) as
+    outputs := forward_results["outputs"]
+    hidden_outputs := forward_results["hidden_outputs"]
+    hidden_inputs := forward_results["hidden_inputs"]
+    output_inputs := forward_results["output_inputs"]
+
+    output_errors := []
+    for i in 0..network["output_size"]-1 do
+        error := outputs[i] - target[i]
+        output_errors.append(error * sigmoid_derivative(output_inputs[i]))
+    stop
+
+    hidden_errors := []
+    for i in 0..network["hidden_size"]-1 do
+        error := 0.0
+        for j in 0..network["output_size"]-1 do
+            error = error + output_errors[j] * network["output_weights"][j][i]
+        stop
+        hidden_errors.append(error * sigmoid_derivative(hidden_inputs[i]))
+    stop
+
+    for i in 0..network["output_size"]-1 do
+        for j in 0..network["hidden_size"]-1 do
+            network["output_weights"][i][j] = network["output_weights"][i][j] - \
+                network["learning_rate"] * output_errors[i] * hidden_outputs[j]
+        stop
+        network["output_bias"][i] = network["output_bias"][i] - \
+            network["learning_rate"] * output_errors[i]
+    stop
+
+    for i in 0..network["hidden_size"]-1 do
+        for j in 0..network["input_size"]-1 do
+            network["hidden_weights"][i][j] = network["hidden_weights"][i][j] - \
+                network["learning_rate"] * hidden_errors[i] * input_data[j]
+        stop
+        network["hidden_bias"][i] = network["hidden_bias"][i] - \
+            network["learning_rate"] * hidden_errors[i]
+    stop
+stop
+
+def train(network, input_data, target) as
+    forward_results := forward_propagate(network, input_data)
+    backward_propagate(network, input_data, target, forward_results)
+    return forward_results["outputs"]
+stop
+
+
+def main() as
+    network := create_neural_network(2, 4, 1)
+    'for XOR'
+    training_data := [ \
+        [[0.0, 0.0], [0.0]], \
+        [[0.0, 1.0], [1.0]], \
+        [[1.0, 0.0], [1.0]], \
+        [[1.0, 1.0], [0.0]] \
+    ]
+
+    for epoch in 1..10000 do
+        total_error := 0.0
+        for data in training_data do
+            input_data := data[0]
+            target := data[1]
+            outputs := train(network, input_data, target)
+
+            error := 0.0
+            for i in 0..target.len()-1 do
+                error = error + (outputs[i] - target[i]) * (outputs[i] - target[i])
+            stop
+            total_error = total_error + error
+        stop
+
+        if epoch % 1000 == 0 then
+            print("Epoch: ", epoch, " Error: ", total_error)
+        stop
+    stop
+
+    print("\nTesting XOR function with trained network:")
+    test_inputs := [ \
+        [0.0, 0.0], \
+        [0.0, 1.0], \
+        [1.0, 0.0], \
+        [1.0, 1.0] \
+    ]
+
+    for input_data in test_inputs do
+        forward_results := forward_propagate(network, input_data)
+        output := forward_results["outputs"][0]
+        print("Input: [", input_data[0], ", ", input_data[1], "]")
+        print("Output: ", output)
+
+        expected := 0.0
+        if (input_data[0] > 0.5 & input_data[1] < 0.5) | (input_data[0] < 0.5 & input_data[1] > 0.5) then
+            expected = 1.0
+        stop
+
+        print("Expected: ", expected)
+        if (output > 0.5 & expected > 0.5) | (output < 0.5 & expected < 0.5) then
+            print("✓ Correct!")
+        else
+            print("✗ Incorrect!")
+        stop
+        print("")
+    stop
+stop
+
+main()
